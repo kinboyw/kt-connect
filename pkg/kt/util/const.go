@@ -22,7 +22,7 @@ const (
 	// ImageKtShadow default shadow image
 	ImageKtShadow = "registry.cn-hangzhou.aliyuncs.com/rdc-incubator/kt-connect-shadow"
 	// ImageKtRouter default router image
-	ImageKtRouter = "registry.cn-hangzhou.aliyuncs.com/rdc-incubator/kt-connect-router"
+	ImageKtRouter = "hub.imgo.tv/argon/kt-connect-router"
 	// ImageKtNavigator default navigator image
 	ImageKtNavigator = "registry.cn-hangzhou.aliyuncs.com/rdc-incubator/kt-connect-navigator"
 
@@ -123,14 +123,13 @@ const (
 	ResourceHeartBeatIntervalMinus = 2
 	// PortForwardHeartBeatIntervalSec interval of port-forward heart beat
 	PortForwardHeartBeatIntervalSec = 60
-
 )
 
 var (
-	KtHome = fmt.Sprintf("%s/.kt", UserHome)
-	KtKeyDir = fmt.Sprintf("%s/key", KtHome)
-	KtPidDir = fmt.Sprintf("%s/pid", KtHome)
-	KtLockDir = fmt.Sprintf("%s/lock", KtHome)
+	KtHome       = fmt.Sprintf("%s/.kt", UserHome)
+	KtKeyDir     = fmt.Sprintf("%s/key", KtHome)
+	KtPidDir     = fmt.Sprintf("%s/pid", KtHome)
+	KtLockDir    = fmt.Sprintf("%s/lock", KtHome)
 	KtProfileDir = fmt.Sprintf("%s/profile", KtHome)
 	KtConfigFile = fmt.Sprintf("%s/config", KtHome)
 )

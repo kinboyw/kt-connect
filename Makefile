@@ -1,4 +1,4 @@
-PREFIX			  ?= registry.cn-hangzhou.aliyuncs.com/rdc-incubator
+PREFIX			  ?= hub.imgo.tv/argon
 TAG				  ?= dev
 SHADOW_IMAGE	  =  kt-connect-shadow
 SHADOW_BASE_IMAGE =  shadow-base
@@ -27,8 +27,8 @@ check:
 ktctl:
 	go mod download
 	GOARCH=amd64 GOOS=linux go build -ldflags "-s -w -X main.version=${TAG}" -o artifacts/linux/ktctl ./cmd/ktctl
-	GOARCH=amd64 GOOS=darwin go build -ldflags "-s -w -X main.version=${TAG}" -o artifacts/macos/ktctl ./cmd/ktctl
-	GOARCH=amd64 GOOS=windows go build -ldflags "-s -w -X main.version=${TAG}" -o artifacts/windows/ktctl.exe ./cmd/ktctl
+#	GOARCH=amd64 GOOS=darwin go build -ldflags "-s -w -X main.version=${TAG}" -o artifacts/macos/ktctl ./cmd/ktctl
+#	GOARCH=amd64 GOOS=windows go build -ldflags "-s -w -X main.version=${TAG}" -o artifacts/windows/ktctl.exe ./cmd/ktctl
 
 # minimize binary size
 upx:
