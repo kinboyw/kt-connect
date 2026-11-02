@@ -1,0 +1,77 @@
+name: Build CLI packages
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.goos }}-${{ matrix.goarch }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        goos: [linux, darwin, windows]
+        goarch: ['386', amd64, arm64]
+        exclude:
+          - goos: darwin
+            goarch: '386'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.18.10'
+          cache: true
+      - run: go mod download
+      - name: Build and package
+        shell: bash
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: '0'
+        run: |
+          set -euo pipefail
+          version=0.3.7
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then
+            version="${GITHUB_REF_NAME#v}"
+            archive_version="$version"
+          else
+            archive_version="${version}-${GITHUB_SHA:0:7}"
+          fi
+          case "$GOOS" in
+            linux) platform=Linux ;;
+            darwin) platform=MacOS ;;
+            windows) platform=Windows ;;
+          esac
+          case "$GOARCH" in
+            386) architecture=i386; wintun_arch=x86 ;;
+            amd64) architecture=x86_64; wintun_arch=amd64 ;;
+            arm64) architecture=arm_64; wintun_arch=arm64 ;;
+          esac
+          binary=ktctl
+          if [[ "$GOOS" == windows ]]; then binary=ktctl.exe; fi
+          mkdir -p package dist
+          go build -trimpath -ldflags "-s -w -X main.version=$version" -o "package/$binary" ./cmd/ktctl
+          if [[ "$GOOS" == linux && "$GOARCH" == amd64 ]]; then
+            ./package/ktctl --version
+          fi
+          archive="ktctl_${archive_version}_${platform}_${architecture}"
+          if [[ "$GOOS" == windows ]]; then
+            curl --fail --location --retry 3 https://www.wintun.net/builds/wintun-0.14.1.zip -o wintun.zip
+            unzip -p wintun.zip "wintun/bin/$wintun_arch/wintun.dll" > package/wintun.dll
+            unzip -p wintun.zip wintun/LICENSE.txt > package/WINTUN-LICENSE.txt
+            (cd package && zip -q "../dist/$archive.zip" ktctl.exe wintun.dll WINTUN-LICENSE.txt)
+          else
+            tar -czf "dist/$archive.tar.gz" -C package ktctl
+          fi
+          (cd dist && sha256sum "$archive".* > "$archive.sha256")
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: ktctl-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30
